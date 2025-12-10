@@ -98,6 +98,9 @@ public class InstructorServiceImpl implements InstructorService {
 
 		return output;
 	}
+	// set lại bảng course cho phép instructor_id null
+	// ALTER TABLE course
+	// ALTER COLUMN instructor_id BIGINT NULL;
 
 	public void deleteInstructor(Long id) {
 		Instructor instructor = instructorRepository.findById(id)
