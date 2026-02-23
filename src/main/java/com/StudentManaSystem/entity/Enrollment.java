@@ -12,16 +12,17 @@ import jakarta.persistence.UniqueConstraint;
 		name = "enrollment", uniqueConstraints = @UniqueConstraint(columnNames = { "student_id", "course_id" }))
 public class Enrollment extends BaseEntity {
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	//Quan hệ 1 Enrollment - nhiều Student.
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "student_id", nullable = false)
 	private Student student;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	//Quan hệ 1 Enrollment - nhiều Course.
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "course_id", nullable = false)
 	private Course course;
 
 	public Enrollment() {
-
 	}
 
 	// Constructor chỉ nhận student và course

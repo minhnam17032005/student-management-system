@@ -17,7 +17,8 @@ public class Instructor extends BaseEntity {
 
 	@Column(nullable = false)
 	private String email;
-
+	
+	//Quan hệ 1 Instructor - nhiều Course.
 	@OneToMany(mappedBy = "instructor")
 	private List<Course> courses = new ArrayList<>();
 

@@ -9,6 +9,7 @@ import com.StudentManaSystem.entity.Course;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
+	//Tìm tất cả Course mà Intructor dạy
 	List<Course> findByInstructorId(Long instructorId);
 
 }

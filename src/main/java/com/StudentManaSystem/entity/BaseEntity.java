@@ -20,7 +20,7 @@ public abstract class BaseEntity {
 	private Long id;
 
 	@CreationTimestamp
-	@Column(updatable = false) // ❗ không bao giờ update createdAt
+	@Column(updatable = false) //không bao giờ update createdAt
 	private LocalDateTime createdAt;
 
 	@UpdateTimestamp

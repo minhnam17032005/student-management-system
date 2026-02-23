@@ -10,7 +10,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 	// Kiểm tra email đã tồn tại hay chưa
 	boolean existsByEmail(String email);
 
-	// Tìm bản ghi có email trùng nhưng id KHÁC id đang cập nhật
+	// Tìm bản ghi có email trùng nhưng id khác id đang cập nhật
 	boolean existsByEmailAndIdNot(String email, Long id);
 
 }

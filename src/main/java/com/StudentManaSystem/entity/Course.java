@@ -22,9 +22,14 @@ public class Course extends BaseEntity {
 	@Column(nullable = false)
 	private String description;
 
+	/*Quan hệ 1 Course - nhiều Enrollment.
+	 * cascade REMOVE: xóa Course sẽ xóa các Enrollment liên quan.
+	 * orphanRemoval = true: xóa Enrollment khỏi collection sẽ xóa khỏi DB.*/
 	@OneToMany(mappedBy = "course", cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private Set<Enrollment> enrollments = new HashSet<>();
 
+	/* Quan hệ nhiều Course - 1 Instructor.
+	 * fetch = EAGER: khi lấy Course sẽ tự động lấy Instructor.*/
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "instructor_id", nullable = true)
 	private Instructor instructor;

@@ -29,11 +29,14 @@ public class InstructorServiceImpl implements InstructorService {
 		this.courseRepository = courseRepository;
 	}
 
-	// lấy tất cả người hướng dẫn
+	// Lấy tất cả Instructor và convert sang DTO để trả về API
 	public List<InstructorResponseDTO> getAllInstructors() {
+
+		// Lấy toàn bộ dữ liệu từ database
 		List<Instructor> instructors = instructorRepository.findAll();
 		List<InstructorResponseDTO> listInstructorResponse = new ArrayList<>();
 
+		// Mapping Entity -> Response DTO
 		instructors.forEach(instructor -> {
 			InstructorResponseDTO dto = new InstructorResponseDTO();
 			dto.setId(instructor.getId());
@@ -42,34 +45,48 @@ public class InstructorServiceImpl implements InstructorService {
 
 			listInstructorResponse.add(dto);
 		});
+
 		return listInstructorResponse;
 	}
 
-	// lấy người hướng dẫn theo id
-	public InstructorResponseDTO getInstructorById(Long id) {
-		Instructor instructor = instructorRepository.findById(id).orElseThrow(
-				() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Instructor with id " + id + " not found"));
 
+	// Lấy Instructor theo id, nếu không tồn tại trả 404
+	public InstructorResponseDTO getInstructorById(Long id) {
+
+		Instructor instructor = instructorRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"Instructor with id " + id + " not found"));
+
+		// Mapping Entity -> DTO
 		InstructorResponseDTO instructorResponse = new InstructorResponseDTO();
 		instructorResponse.setId(instructor.getId());
 		instructorResponse.setName(instructor.getName());
 		instructorResponse.setEmail(instructor.getEmail());
 
 		return instructorResponse;
-
 	}
 
-	// thêm người hướng dẫn mới
+
+	// Tạo Instructor mới, kiểm tra email không được trùng
 	public InstructorResponseDTO createInstructor(InstructorRequestDTO input) {
+
+		// Validate email unique
 		if (instructorRepository.existsByEmail(input.getEmail())) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn tại");
+			throw new ResponseStatusException(
+					HttpStatus.BAD_REQUEST,
+					"Email đã tồn tại");
 		}
+
+		// Mapping Request DTO -> Entity
 		Instructor newInstructor = new Instructor();
 		newInstructor.setName(input.getName());
 		newInstructor.setEmail(input.getEmail());
 
+		// Lưu xuống database
 		Instructor createdInstructor = instructorRepository.save(newInstructor);
 
+		// Mapping Entity -> DTO
 		InstructorResponseDTO output = new InstructorResponseDTO();
 		output.setId(createdInstructor.getId());
 		output.setName(createdInstructor.getName());
@@ -78,19 +95,30 @@ public class InstructorServiceImpl implements InstructorService {
 		return output;
 	}
 
-	// cập nhật người hướng dẫn
-	public InstructorResponseDTO updateInstructor(Long id, InstructorRequestDTO input) {
-		Instructor instructor = instructorRepository.findById(id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "instructor không tồn tại"));
 
+	// Cập nhật Instructor theo id
+	public InstructorResponseDTO updateInstructor(Long id, InstructorRequestDTO input) {
+
+		// Kiểm tra Instructor tồn tại
+		Instructor instructor = instructorRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"Instructor không tồn tại"));
+
+		// Kiểm tra email không trùng với Instructor khác
 		if (instructorRepository.existsByEmailAndIdNot(input.getEmail(), id)) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn tại");
+			throw new ResponseStatusException(
+					HttpStatus.BAD_REQUEST,
+					"Email đã tồn tại");
 		}
 
+		// Cập nhật dữ liệu
 		instructor.setName(input.getName());
 		instructor.setEmail(input.getEmail());
 
 		Instructor updatedInstructor = instructorRepository.save(instructor);
+
+		// Mapping Entity -> DTO
 		InstructorResponseDTO output = new InstructorResponseDTO();
 		output.setId(updatedInstructor.getId());
 		output.setName(updatedInstructor.getName());
@@ -98,29 +126,35 @@ public class InstructorServiceImpl implements InstructorService {
 
 		return output;
 	}
-	// set lại bảng course cho phép instructor_id null
-	// ALTER TABLE course
-	// ALTER COLUMN instructor_id BIGINT NULL;
 
+
+	/* Xóa Instructor:
+	* Vì Course có khóa ngoại instructor_id,
+	* nên phải set instructor = null cho các Course liên quan
+	* trước khi xóa để tránh lỗi ràng buộc khóa ngoại.*/
 	public void deleteInstructor(Long id) {
-		Instructor instructor = instructorRepository.findById(id)
-				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "instructor không tồn tại"));
 
-		// 2. Lấy tất cả course có instructor_id = id
+		// Kiểm tra Instructor tồn tại
+		Instructor instructor = instructorRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"Instructor không tồn tại"));
+
+		// Lấy tất cả Course có instructor_id = id
 		List<Course> courses = courseRepository.findByInstructorId(id);
 
-		// 3. Set instructor = null cho từng course
+		// Set instructor = null để tránh lỗi foreign key
 		for (Course c : courses) {
 			c.setInstructor(null);
 		}
 
-		// 4. Lưu lại course
+		// Lưu thay đổi xuống database
 		courseRepository.saveAll(courses);
 
-		// flush changes trước khi xóa instructor
+		// Flush để đảm bảo cập nhật hoàn tất trước khi xóa
 		courseRepository.flush();
 
-		// Xoá instructor
+		// Xóa Instructor
 		instructorRepository.delete(instructor);
 	}
 }

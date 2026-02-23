@@ -22,6 +22,10 @@ public class Student extends BaseEntity {
 	@Column(nullable = false)
 	private int age;
 
+	/*Quan hệ 1 Student - nhiều Enrollment.
+	* cascade = REMOVE: xóa Student sẽ xóa toàn bộ Enrollment liên quan.
+    * orphanRemoval = true: xóa Enrollment khỏi collection sẽ xóa luôn khỏi DB.
+	* HashSet : một student không được đăng ký 1 course 2 lần. */
 	@OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private Set<Enrollment> enrollments = new HashSet<>();
 
